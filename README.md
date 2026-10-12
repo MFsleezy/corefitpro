@@ -1,0 +1,1 @@
+I dont like paying for shit and im too lazy to reverse egineer some other probably better app atm so i just had my agent build me an html page so i can track my workouts on my phone wihout some shitty pay to play ass app. use it if you want, idc.
