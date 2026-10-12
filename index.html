@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>CoreFit Pro</title>
+    <meta name="theme-color" content="#121212">
+    <style>
+        :root {            --bg-color: #121212;
+            --card-bg: #1e1e1e;
+            --primary: #bb86fc;
+            --secondary: #03dac6;
+            --text-main: #e0e0e0;
+            --text-dim: #a0a0a0;
+            --accent: #cf6679;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        header {
+            width: 100%;
+            padding: 20px;
+            text-align: center;
+            background-color: var(--card-bg);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.5);
+            position: sticky;
+            top: 0;
+            z-index: 10;        }
+
+        h1 { margin: 0; font-size: 1.5rem; color: var(--primary); letter-spacing: 1px; }
+
+        .container {
+            width: 90%;
+            max-width: 500px;
+            padding: 20px 0;
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+
+        .card h2 {
+            margin-top: 0;
+            font-size: 1.2rem;
+            color: var(--secondary);
+        }
+
+        .day-selector {
+            width: 100%;
+            padding: 12px;
+            background: #333;
+            color: white;
+            border: 1px solid var(--primary);            border-radius: 10px;
+            font-size: 1rem;
+            margin-bottom: 20px;
+            outline: none;
+        }
+
+        .movement-row {
+            display: flex;
+            flex-direction: column;
+            padding: 15px 0;
+            border-bottom: 1px solid #333;
+        }
+
+        .movement-header {
+            display: flex;            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .exercise-name-input {
+            background: transparent;
+            border: none;
+            border-bottom: 1px dashed #555;
+            color: var(--text-main);
+            font-weight: bold;
+            font-size: 1rem;
+            width: 70%;
+            padding: 2px;
+        }        .exercise-type {
+            font-size: 0.7rem;
+            color: var(--primary);
+            text-transform: uppercase;
+            font-weight: bold;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .field {            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.9rem;
+            color: var(--text-dim);
+        }
+
+        input[type="number"] {
+            width: 60px;
+            background: #333;
+            border: 1px solid #444;
+            color: white;
+            padding: 6px;
+            border-radius: 5px;
+            text-align: center;        }
+
+        .btn {
+            background-color: var(--primary);
+            color: black;
+            border: none;
+            padding: 15px 24px;
+            border-radius: 10px;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+            font-size: 1.1rem;
+            margin-top: 10px;
+        }        .btn:active { opacity: 0.7; }
+
+        .weight-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .weight-input {
+            width: 80px !important;
+            font-size: 1.1rem;
+        }
+    </style>
+</head>
+<body><header>
+    <h1>CORE FIT PRO</h1>
+</header>
+
+<div class="container">
+    <div class="card">
+        <h2>Select Workout</h2>
+        <select id="day-select" class="day-selector" onchange="loadWorkout()">
+            <option value="chest">Monday - Chest</option>
+            <option value="back">Wednesday - Back</option>
+            <option value="legs">Friday - Legs</option>
+        </select>
+
+        <div id="workout-content">            <!-- Dynamic Exercises injected here -->
+        </div>
+
+        <button class="btn" onclick="saveWorkout()">Log Session</button>
+    </div>
+
+    <div class="card">
+        <h2>Body Weight</h2>
+        <div class="weight-section">
+            <span>Current Weight (lbs):</span>
+            <input type="number" id="current-weight" class="weight-input" placeholder="000">
+        </div>
+    </div>
+</div><script>
+    const defaultPlans = {
+        chest: [
+            { name: 'Bench Press', type: 'Major' },
+            { name: 'Incline DB Press', type: 'Accessory' },
+            { name: 'Chest Flys', type: 'Accessory' },
+            { name: 'Dips', type: 'Accessory' },
+            { name: 'Pushups', type: 'Accessory' },
+            { name: 'Tricep Pushdowns', type: 'Accessory' }
+        ],
+        back: [
+            { name: 'Deadlifts/Rows', type: 'Major' },
+            { name: 'Pull-ups/Lat Pulls', type: 'Accessory' },
+            { name: 'Seated Cable Rows', type: 'Accessory' },
+            { name: 'Face Pulls', type: 'Accessory' },            { name: 'Hyperextensions', type: 'Accessory' },
+            { name: 'Bicep Curls', type: 'Accessory' }
+        ],
+        legs: [
+            { name: 'Squats', type: 'Major' },
+            { name: 'Leg Press', type: 'Accessory' },
+            { name: 'Leg Curls', type: 'Accessory' },
+            { name: 'Leg Extensions', type: 'Accessory' },
+            { name: 'Calf Raises', type: 'Accessory' },
+            { name: 'Plank/Core', type: 'Accessory' }
+        ]
+    };
+
+    function loadWorkout() {
+        const day = document.getElementById('day-select').value;        const container = document.getElementById('workout-content');
+        container.innerHTML = '';
+
+        const storedExercises = JSON.parse(localStorage.getItem(`corefit_ex_${day}`) || '[]');
+        const exercises = storedExercises.length > 0 ? storedExercises : defaultPlans[day];
+
+        exercises.forEach((ex, index) => {
+            container.innerHTML += `
+                <div class="movement-row">
+                    <div class="movement-header">
+                        <input type="text" class="exercise-name-input"
+                               value="${ex.name}"
+                               onchange="updateExerciseName('${day}', ${index}, this.value)">
+                        <span class="exercise-type">${ex.type}</span>
+                    </div>                    <div class="input-group">
+                        <div class="field">
+                            <span>Weight:</span>
+                            <input type="number" id="${day}-${index}-weight" placeholder="lbs">
+                        </div>
+                        <div class="field">
+                            <span>Reps:</span>
+                            <input type="number" id="${day}-${index}-reps" placeholder="0">
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+    }    function updateExerciseName(day, index, newName) {
+        const stored = JSON.parse(localStorage.getItem(`corefit_ex_${day}`) || JSON.stringify(defaultPlans[day]));
+        stored[index].name = newName;
+        localStorage.setItem(`corefit_ex_${day}`, JSON.stringify(stored));
+    }
+
+    function saveWorkout() {
+        const day = document.getElementById('day-select').value;
+        const log = [];
+        const exercises = JSON.parse(localStorage.getItem(`corefit_ex_${day}`) || JSON.stringify(defaultPlans[day]));
+
+        exercises.forEach((ex, index) => {
+            log.push({
+                name: ex.name,
+                weight: document.getElementById(`${day}-${index}-weight`).value,                reps: document.getElementById(`${day}-${index}-reps`).value
+            });
+        });
+
+        const weight = document.getElementById('current-weight').value;
+        localStorage.setItem('corefit_weight', weight);
+
+        const history = JSON.parse(localStorage.getItem('corefit_history') || '[]');
+        history.push({
+            date: new Date().toLocaleString(),
+            day: day,
+            data: log,
+            bodyweight: weight
+        });
+        localStorage.setItem('corefit_history', JSON.stringify(history));        alert('Session logged. Stay consistent!');
+    }
+
+    window.onload = () => {
+        loadWorkout();
+        const savedWeight = localStorage.getItem('corefit_weight');
+        if (savedWeight) document.getElementById('current-weight').value = savedWeight;
+    };
+</script>
+
+</body>
+</html>
